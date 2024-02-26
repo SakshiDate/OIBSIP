@@ -3,22 +3,36 @@ import random
 from tkinter import *
 
 def generate_password():
-    password_strength = choice.get()
-    password_length = int(val.get())
+    try:
+        password_length = int(val_length.get())
+        if password_length <= 0:
+            raise ValueError("Please enter a positive password length.")
 
-    if password_strength == 1:
-        characters = string.ascii_letters
-    elif password_strength == 2:
-        characters = string.ascii_letters + string.digits
-    else:
-        characters = string.ascii_letters + string.digits + string.punctuation
+        selected_characters = ""
 
-    generated_password = ''.join(random.choice(characters) for _ in range(password_length))
-    result.config(text="Generated Password: " + generated_password)
+        if include_uppercase.get():
+            selected_characters += string.ascii_uppercase
+        if include_lowercase.get():
+            selected_characters += string.ascii_lowercase
+        if include_digits.get():
+            selected_characters += string.digits
+        if include_symbols.get():
+            selected_characters += string.punctuation
+
+        if not selected_characters:
+            raise ValueError("Please select at least one character type.")
+
+        generated_password = ''.join(random.choice(selected_characters) for _ in range(password_length))
+        result.config(text="Generated Password: " + generated_password)
+    except ValueError as e:
+        result.config(text=str(e))
+
+def clear_result():
+    result.config(text="")
 
 root = Tk()
 root.title("Password Generator")
-root.geometry("400x250")
+root.geometry("500x400")
 root.configure(bg='lightgray')
 
 frame_strength = Frame(root, bg='blue')
@@ -28,13 +42,20 @@ label_strength = Label(frame_strength, text="Select Password Strength", fg='whit
                         font=('Helvetica', 12))
 label_strength.pack(pady=5)
 
-choice = IntVar()
-rb1 = Radiobutton(frame_strength, text="Weak (Letters Only)", variable=choice, value=1)
-rb2 = Radiobutton(frame_strength, text="Medium (Letters + Numbers)", variable=choice, value=2)
-rb3 = Radiobutton(frame_strength, text="Strong (Letters + Numbers + Symbols)", variable=choice, value=3)
-rb1.pack()
-rb2.pack()
-rb3.pack()
+include_uppercase = IntVar()
+include_lowercase = IntVar()
+include_digits = IntVar()
+include_symbols = IntVar()
+
+cb_uppercase = Checkbutton(frame_strength, text="Uppercase", variable=include_uppercase)
+cb_lowercase = Checkbutton(frame_strength, text="Lowercase", variable=include_lowercase)
+cb_digits = Checkbutton(frame_strength, text="Digits", variable=include_digits)
+cb_symbols = Checkbutton(frame_strength, text="Symbols", variable=include_symbols)
+
+cb_uppercase.pack()
+cb_lowercase.pack()
+cb_digits.pack()
+cb_symbols.pack()
 
 frame_length = Frame(root, bg='red')
 frame_length.pack(pady=10)
@@ -43,13 +64,17 @@ label_length = Label(frame_length, text="Enter Password Length", fg='white', bg=
                      font=('Helvetica', 12))
 label_length.pack(pady=5)
 
-val = StringVar()
-password_length_entry = Entry(frame_length, textvariable=val)
+val_length = StringVar()
+password_length_entry = Entry(frame_length, textvariable=val_length)
 password_length_entry.pack(pady=5)
 
 generate_button = Button(root, text="Generate Password", command=generate_password, bg='green', fg='white',
                          font=('Helvetica', 12))
 generate_button.pack(pady=10)
+
+clear_button = Button(root, text="Clear Result", command=clear_result, bg='gray', fg='white',
+                      font=('Helvetica', 12))
+clear_button.pack(pady=5)
 
 result = Label(root, text="", font=('Helvetica', 12))
 result.pack()
